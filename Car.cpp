@@ -18,7 +18,7 @@ Car::Car() :
 {
     rpm = 0;
     powerOn = false;
-    timestamp = 0;
+    lastMessage = 0;
 }
 
 /**
@@ -30,14 +30,14 @@ void Car::initialize(CANRaw *in, CANRaw *out)
 {
     FilterListener::initialize(in, out);
 
-    in->begin(CAN_BPS_500K, 255);
-    in->setNumTXBoxes(NUM_TX_BOXES_CAR);
-    in->setRXFilter(MBOX_CAR_STATUS, 0x129, 0x7FF, false); // status and rpm from GEVCU
+    in->begin(CAN_CAR_SPEED, 255);
+    in->setNumTXBoxes(CAN_CAR_NUM_TX_BOXES);
+    in->setRXFilter(CAN_CAR_MBOX_STATUS, 0x129, 0x7FF, false); // status and rpm from GEVCU
     in->setRXFilter(1, 0, 0, false); // catch all standard messages
     in->setRXFilter(2, 0, 0, true); // catch all extended messages
 
     in->attachObj(this);
-    attachMBHandler(MBOX_CAR_STATUS);
+    attachMBHandler(CAN_CAR_MBOX_STATUS);
     attachGeneralHandler();
 }
 
@@ -47,10 +47,10 @@ void Car::initialize(CANRaw *in, CANRaw *out)
 void Car::gotFrame(CAN_FRAME* frame, int mailbox)
 {
     switch (mailbox) {
-    case MBOX_CAR_STATUS: // read status information coming from the car
+    case CAN_CAR_MBOX_STATUS: // read status information coming from the car
         rpm = frame->data.s0;
         powerOn = frame->data.s1 & 0x01;
-        timestamp = millis();
+        lastMessage = millis();
         break;
     }
     out->sendFrame(*frame);
@@ -69,7 +69,7 @@ void Car::gotFrame(CAN_FRAME* frame, int mailbox)
  */
 bool Car::isRunning()
 {
-    return (powerOn && ((millis() - timestamp) < GEVCU_TIMEOUT));
+    return (powerOn && ((millis() - lastMessage) < CAN_CAR_TIMEOUT));
 }
 
 /**

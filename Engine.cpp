@@ -22,20 +22,18 @@ void Engine::initialize(CANRaw *in, CANRaw *out)
 {
     FilterListener::initialize(in, out);
 
-    in->begin(CAN_BPS_500K, 255);
-
-    // ECM - engine control module
-    in->setNumTXBoxes(NUM_TX_BOXES_ENGINE);
-    in->setRXFilter(MBOX_ENGINE_RUNNING, 0x167, 0x7FF, false); // engine running
-    in->setRXFilter(MBOX_ENGINE_ALTERNATOR, 0x3d3, 0x7FF, false); // alternator status
-    in->setRXFilter(MBOX_ENGINE_RPM, 0x12a, 0x7FF, false); // rpm (interval 15ms)
+    in->begin(CAN_ENGINE_SPEED, 255);
+    in->setNumTXBoxes(CAN_ENGINE_NUM_TX_BOXES);
+    in->setRXFilter(CAN_ENGINE_MBOX_RUNNING, 0x167, 0x7FF, false); // engine running
+    in->setRXFilter(CAN_ENGINE_MBOX_ALTERNATOR, 0x3d3, 0x7FF, false); // alternator status
+    in->setRXFilter(CAN_ENGINE_MBOX_RPM, 0x12a, 0x7FF, false); // rpm (interval 15ms)
     in->setRXFilter(3, 0, 0, false); // catch all standard messages
     in->setRXFilter(4, 0, 0, true); // catch all extended messages
 
     in->attachObj(this);
-    attachMBHandler(MBOX_ENGINE_RUNNING);
-    attachMBHandler(MBOX_ENGINE_ALTERNATOR);
-    attachMBHandler(MBOX_ENGINE_RPM);
+    attachMBHandler(CAN_ENGINE_MBOX_RUNNING);
+    attachMBHandler(CAN_ENGINE_MBOX_ALTERNATOR);
+    attachMBHandler(CAN_ENGINE_MBOX_RPM);
     attachGeneralHandler();
 }
 
@@ -46,10 +44,10 @@ void Engine::gotFrame(CAN_FRAME* frame, int mailbox)
 {
     if (car.isRunning()) { // only manipulate when car reports ready
         switch (mailbox) {
-        case MBOX_ENGINE_RUNNING:
+        case CAN_ENGINE_MBOX_RUNNING:
             frame->data.bytes[4] |= 0x40; // set the bit "engine running"
             break;
-        case MBOX_ENGINE_ALTERNATOR: // signal a working alternator and coolant system
+        case CAN_ENGINE_MBOX_ALTERNATOR: // signal a working alternator and coolant system
             frame->data.bytes[0] = 0x24;
             frame->data.bytes[1] = 0x42;
             frame->data.bytes[2] = 0x0;
@@ -59,7 +57,7 @@ void Engine::gotFrame(CAN_FRAME* frame, int mailbox)
             frame->data.bytes[6] = 0x76;
             frame->data.bytes[7] = 0x8;
             break;
-        case MBOX_ENGINE_RPM: // replace the engine speed with the one of the electric motor
+        case CAN_ENGINE_MBOX_RPM: // replace the engine speed with the one of the electric motor
             uint16_t rpm = car.getRpm();
             frame->data.bytes[6] = 0xe0 | (rpm & 0xff00) >> 8;
             frame->data.bytes[7] = rpm & 0xff;

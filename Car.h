@@ -21,7 +21,7 @@ public:
 private:
     uint16_t rpm; // the rpm reported by GEVCU
     bool powerOn; // flag to indicate if the dcdc converter is running
-    uint32_t timestamp; // timestamp when we got the last message from GEVCU
+    uint32_t lastMessage; // timestamp when we got the last message from GEVCU
 };
 
 extern Car car;
