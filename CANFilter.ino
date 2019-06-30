@@ -23,7 +23,7 @@ void setup()
     SerialUSB.begin(CFG_SERIAL_SPEED);
 
     pinMode(CFG_IO_BLINK_LED, OUTPUT);
-    digitalWrite(CFG_IO_BLINK_LED, HIGH);
+    digitalWrite(CFG_IO_BLINK_LED, LOW);
 
     car.initialize(&Can0, &Can1);
     engine.initialize(&Can1, &Can0);
@@ -39,6 +39,6 @@ void loop()
 
     SerialUSB.println(car.isRunning());
 
-    digitalWrite(CFG_IO_BLINK_LED, led);
     led = !led;
+    digitalWrite(CFG_IO_BLINK_LED, led);
 }

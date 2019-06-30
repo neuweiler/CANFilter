@@ -12,7 +12,7 @@
 //#define LOG_FRAMES // uncomment to print frames (may take too much time to process all messages!)
 #define CFG_IO_BLINK_LED 13 // 13 is L, 73 is TX, 72 is RX
 #define CFG_SERIAL_SPEED 115200
-#define CFG_LOOP_DELAY 5000
+#define CFG_LOOP_DELAY 1000
 
 // config for can bus connected to car control units (GEVCU)
 #define CAN_CAR_SPEED CAN_BPS_500K
